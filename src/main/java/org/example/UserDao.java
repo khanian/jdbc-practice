@@ -3,42 +3,43 @@ package org.example;
 import java.sql.*;
 
 public class UserDao {
+//    public void create(User user) throws SQLException {
+//        Connection connection = null;
+//        PreparedStatement pstmt = null;
+//
+//        try {
+//            connection = ConnectionManager.getConnection();
+//            String sql = "INSERT INTO USERS VALUES (?, ?, ?, ?)";
+//            pstmt = connection.prepareStatement(sql);
+//            pstmt.setString(1, user.getUserId());
+//            pstmt.setString(2, user.getPassword());
+//            pstmt.setString(3, user.getName());
+//            pstmt.setString(4, user.getEmail());
+//
+//            pstmt.executeUpdate();
+//        } finally {
+//            if (pstmt != null) {
+//                pstmt.close();
+//            }
+//            if (connection != null) {
+//                connection.close();
+//            }
+//        }
+//
+//    }
+
     public void create(User user) throws SQLException {
-        Connection connection = null;
-        PreparedStatement pstmt = null;
-
-        try {
-            connection = getConnetion();
-            String sql = "INSERT INTO USERS VALUES (?, ?, ?, ?)";
-            pstmt = connection.prepareStatement(sql);
-            pstmt.setString(1, user.getUserId());
-            pstmt.setString(2, user.getPassword());
-            pstmt.setString(3, user.getName());
-            pstmt.setString(4, user.getEmail());
-
-            pstmt.executeUpdate();
-        } finally {
-            if (pstmt != null) {
-                pstmt.close();
+        JdbcTemplate jdbcTemplate = new JdbcTemplate();
+        String sql = "INSERT INTO USERS VALUES (?, ?, ?, ?)";
+        jdbcTemplate.executeUpdate(user, sql, new PreparedStatementSetter() {
+            @Override
+            public void setter(PreparedStatement pstmt) throws SQLException {
+                pstmt.setString(1, user.getUserId());
+                pstmt.setString(2, user.getPassword());
+                pstmt.setString(3, user.getName());
+                pstmt.setString(4, user.getEmail());
             }
-            if (connection != null) {
-                connection.close();
-            }
-        }
-
-    }
-
-    private Connection getConnetion() {
-        String url = "jdbc:h2:mem://localhost/~/jdbc-practice;MODE=MySQL;DB_CLOSE_DELAY=-1";
-        String id = "sa";
-        String pw = "";
-
-        try {
-            Class.forName("org.h2.Driver");
-            return DriverManager.getConnection(url, id, pw);
-        } catch (Exception e) {
-            return null;
-        }
+        });
     }
 
     public User findByUserId(String userId) throws SQLException {
@@ -47,7 +48,7 @@ public class UserDao {
         ResultSet rs = null;
 
         try {
-            connection = getConnetion();
+            connection = ConnectionManager.getConnection();
             String sql = "SELECT userId, password, name, email FROM USERS WHERE userId = ?";
             pstmt = connection.prepareStatement(sql);
             pstmt.setString(1, userId);
